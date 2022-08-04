@@ -1,1 +1,4 @@
 package serverhandlers
+
+func main() {
+}
