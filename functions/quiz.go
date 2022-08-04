@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/purush7/quiz/inOut"
 	"github.com/purush7/quiz/util"
 	log "github.com/sirupsen/logrus"
 )
@@ -13,17 +14,9 @@ import (
 //Todo use custom logger
 // var log = logger.Init()
 
-func getAns() string {
-	var str string
-	fmt.Scanf("%s", &str)
-	return str
-}
+var writer = inOut.Writer
 
-func pushResult(str string) {
-	fmt.Println(str)
-}
-
-func StartQuiz(fileName string, timer *time.Duration) {
+func StartQuiz(fileName string, duration *time.Duration) {
 	present := util.StatFile(fileName)
 	if !present {
 		log.Errorf("%s file isn't present", fileName)
@@ -34,39 +27,44 @@ func StartQuiz(fileName string, timer *time.Duration) {
 		log.Errorln(err)
 		return
 	}
-	ansCh := make(chan string)
 
-	//Get input
-	go func() {
-		for {
-			ansCh <- getAns()
-		}
-	}()
+	result := askQuestions(duration, file, os.Stdout)
 
-	result := askQuestions(timer, file, os.Stdout, ansCh)
-
-	pushResult(result)
+	writer.Put(result)
 }
 
-func askQuestions(timer *time.Duration, r io.Reader, w io.Writer, ansCh chan string) string {
+func askQuestions(duration *time.Duration, r io.Reader, w io.Writer) string {
 	score := 0
 	ind := 0
 	quesCh := util.ReadCSVLine(r)
+
+	ansCh := make(chan string)
+
 	for record := range quesCh {
 		if len(record) != 2 {
 			log.Errorln("error length of record %v isn't 2 as expected", record)
 			close(quesCh)
 			break
 		}
-		fmt.Fprintf(w, "what %s, sir?\n", record[0])
-		if timer != nil {
-			go func() {
-				time.Sleep(*timer)
-				ansCh <- ""
-			}()
-		}
-		ans := <-ansCh
 
+		if duration != nil {
+			timer := time.NewTimer(*duration)
+			go func(record []string) {
+				ansCh <- writer.PutGet(fmt.Sprintf("what %s, sir?", record[0]))
+			}(record)
+
+			select {
+			case <-timer.C:
+				writer.Put("Timeout")
+			case ans := <-ansCh:
+				if ans == record[1] {
+					score++
+				}
+			}
+			ind++
+			continue
+		}
+		ans := writer.PutGet(fmt.Sprintf("what %s, sir?", record[0]))
 		if ans == record[1] {
 			score++
 		}

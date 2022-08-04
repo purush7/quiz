@@ -8,6 +8,7 @@
 - [ ] b/w two terminals, sockets
 - [ ] Logger (Debug, Prod) etc
 - [ ] pkg
+- [ ] flag
 - [ ] viper
 - [ ] main logic
 - [ ] update readme.md

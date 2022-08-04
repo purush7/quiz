@@ -1,18 +1,18 @@
-package io
+package inOut
 
 import (
-	"io"
 	"os"
 
 	"github.com/purush7/quiz/constants"
 	"github.com/purush7/quiz/util"
 )
 
-type writerStruct struct {
-	writer io.Writer
+type inOutInterface interface {
+	PutGet(string) string
+	Put(string)
 }
 
-var writer writerStruct
+var Writer inOutInterface
 
 func init() {
 	value := os.Getenv("SETUP")
@@ -31,6 +31,6 @@ func init() {
 	case constants.FILE:
 
 	default:
-
+		Writer = terminalInit()
 	}
 }

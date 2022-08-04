@@ -1,27 +1,37 @@
 package main
 
 import (
-	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/purush7/quiz/functions"
+	"github.com/purush7/quiz/inOut"
+	log "github.com/sirupsen/logrus"
 )
 
+var writer = inOut.Writer
+
 func main() {
-	fmt.Println("Enter the fileName")
-	var fileName string
-	fmt.Scanf("%s", &fileName)
+	fileName := writer.PutGet("Enter the fileName")
 	if fileName == "" {
 		fileName = "problems.csv"
 	}
 	var secs int = 0
-	timer := new(time.Duration)
-	fmt.Println("Enter the timer in seconds")
-	fmt.Scanf("%d", &secs)
-	if secs == 0 {
-		timer = nil
+	var err error
+	duration := new(time.Duration)
+	secsString := writer.PutGet("Enter the timer in seconds")
+	if secsString != "" {
+		secs, err = strconv.Atoi(secsString)
+		if err != nil {
+			log.Errorln(err)
+			duration = nil
+		}
 	} else {
-		*timer = time.Duration(secs * int(time.Second))
+		duration = nil
 	}
-	functions.StartQuiz(fileName, timer)
+
+	if secs != 0 {
+		*duration = time.Duration(secs * int(time.Second))
+	}
+	functions.StartQuiz(fileName, duration)
 }
