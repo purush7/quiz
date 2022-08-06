@@ -5,7 +5,7 @@
 - [x] Directory Structure
 - [ ] switch case for writer
 - [ ] server Handler
-- [ ] b/w two terminals, sockets
+- [ ] b/w two terminals, sockets (https://www.developer.com/languages/intro-socket-programming-go/)
 - [ ] Logger (Debug, Prod) etc
 - [ ] pkg
 - [ ] flag
